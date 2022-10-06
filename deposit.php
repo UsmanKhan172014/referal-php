@@ -37,7 +37,6 @@ if (isset($_POST['btnAddAmount'])) {
     // exit;
     echo "<script>window.location='deposit.php?Err=addedamount'</script>";
 }
-
 ?>
 
 <div class="container-fluid">
@@ -60,12 +59,12 @@ if (isset($_POST['btnAddAmount'])) {
         }
         ?>
         <div class="d-md-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Withdraw Money</h5>
+            <h5 class="mb-0">Deposit Money</h5>
 
             <nav aria-label="breadcrumb" class="d-inline-block mt-2 mt-sm-0">
                 <ul class="breadcrumb bg-transparent rounded mb-0 p-0">
                     <li class="breadcrumb-item text-capitalize"><a href="index.html">Site1</a></li>
-                    <li class="breadcrumb-item text-capitalize active" aria-current="page">Blank Page</li>
+                    <li class="breadcrumb-item text-capitalize active" aria-current="page">Deposit</li>
                 </ul>
             </nav>
         </div>

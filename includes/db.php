@@ -1,4 +1,5 @@
 <?php
+error_reporting(false);
 date_default_timezone_set("Asia/Karachi");
 // error_reporting(0);
 

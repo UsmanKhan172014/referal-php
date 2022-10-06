@@ -1,503 +1,256 @@
+<?php
+include("includes/db.php");
 
-<!DOCTYPE html>
-<html lang="en">
+$Total_Earning = 0;
 
-    <head>
-        <meta charset="utf-8" />
-        <title>Landrick - Pricing</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="Premium Bootstrap 5 Admin Dashboard Template" />
-        <meta name="keywords" content="Saas, CRM, Admin, Dashboard, Modern, Classic" />
-        <meta name="author" content="Shreethemes" />
-        <meta name="email" content="support@shreethemes.in" />
-        <meta name="website" content="https://shreethemes.in" />
-        <meta name="Version" content="v4.0.0" />
-        <!-- favicon -->
-        <link rel="shortcut icon" href="assets/images/favicon.ico">
-        <!-- Bootstrap -->
-        <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-        <!-- simplebar -->
-        <link href="assets/css/simplebar.css" rel="stylesheet" type="text/css" />
-        <!-- Icons -->
-        <link href="assets/css/materialdesignicons.min.css" rel="stylesheet" type="text/css" />
-        <link href="assets/css/tabler-icons.min.css" rel="stylesheet" type="text/css" />
-        <link href="https://unicons.iconscout.com/release/v3.0.6/css/line.css"  rel="stylesheet">
-        <!-- Css -->
-        <link href="assets/css/style.css" rel="stylesheet" type="text/css" id="theme-opt" />
+$query = "SELECT SUM(eamount) AS Total_Earning FROM user_earnings WHERE euserid = '".$_SESSION["User_ID"]."' AND etype = 'earning' ";
+$sql = mysqli_query($con,$query); //echo $up;
+$eanring_num = mysqli_num_rows($sql);
+$eanring_row = mysqli_fetch_array($sql);
+$Total_Earning = $Total_Earning + $eanring_row["Total_Earning"];
 
-    </head>
+if(isset($_POST['btnEarningWithdraw']))
+{
+    $queryWC = "SELECT * FROM withdraw WHERE w_user = '".$_SESSION["User_ID"]."' AND w_package = '".$_REQUEST["Withdraw_Package"]."' AND w_date = '".date("Y-m-d")."' ";
+    $sqlWC = mysqli_query($con,$queryWC);
+    if(mysqli_num_rows($sqlWC) > 0){
+        echo "<script>window.location='withdraw-page.php?Err=alreadywithdraw'</script>";
+    }
+    else{
+        $query3 = "SELECT * FROM packages WHERE p_id = '".$_REQUEST["Withdraw_Package"]."' ";
+        $sql3 = mysqli_query($con,$query3);
+        $row3 = mysqli_fetch_array($sql3);
 
-    <body>
-        <!-- Loader -->
-        <!-- <div id="preloader">
-            <div id="status">
-                <div class="spinner">
-                    <div class="double-bounce1"></div>
-                    <div class="double-bounce2"></div>
-                </div>
-            </div>
-        </div> -->
-        <!-- Loader -->
+        $query = "SELECT * FROM user_invests UI INNER JOIN packages P ON UI.ipackage = P.p_id WHERE UI.iuserid = '".$_SESSION["User_ID"]."' AND UI.ipackage = '".$_REQUEST["Withdraw_Package"]."' ";
+        $sql = mysqli_query($con,$query);
+        $row2 = mysqli_fetch_array($sql);
+        if($row2["iamount"] < $row3["p_invest"]){
+            echo "<script>window.location='withdraw-page.php?Err=withdrawmin&mininvest=".$row3["p_invest"]."'</script>";
+        }
+        else{
+            $query = "SELECT SUM(eamount) AS Total_Earning FROM user_earnings WHERE euserid = '".$_SESSION["User_ID"]."' AND epackage = '".$_REQUEST["Withdraw_Package"]."' AND etype = 'earning'";
+            $sql = mysqli_query($con,$query); //echo $up;
+            $eanring_row = mysqli_fetch_array($sql);
+            $eanring_num = mysqli_num_rows($sql);
 
-        <div class="page-wrapper landrick-theme toggled">
-            <nav id="sidebar" class="sidebar-wrapper sidebar-dark">
-                <div class="sidebar-content" data-simplebar style="height: calc(100% - 60px);">
-                    <div class="sidebar-brand">
-                        <a href="index.html">
-                            <img src="assets/images/logo1.png" height="24" class="logo-light-mode" alt="">
-                               <span class="sidebar-colored">
-                                <img src="assets/images/logo1.png" height="24" alt="">
-                            </span>
-                        </a>
-                    </div>
-                    
-                    <ul class="sidebar-menu">
-                        <li><a href="index.html"><i class="ti ti-home me-2"></i>Dashboard</a></li>
-                        <li class="sidebar">
-                            <a href="deposit.php"><i class="ti ti-browser me-2"></i>Deposit Money</a>
-                          
-                        </li>
-                        <li class="sidebar">
-                            <a href="pricing.html"><i class="ti ti-user me-2"></i>Withdraw Money</a>
-                           
-                        </li>
-                        <li class="sidebar">
-                            <a href="refer.php"><i class="ti ti-apps me-2"></i>Referral Code</a>
-                           
-                        </li>
-                        <li class="sidebar">
-                            <a href="/landing/index.php"><i class="ti ti-logout me-2"></i>Logout</a>
-                           
-                        </li>
-                    <!-- sidebar-menu  -->
-                </div>
-                
-                <!-- Sidebar Footer -->
-                <ul class="sidebar-footer list-unstyled mb-0">
-                    <li class="list-inline-item mb-0">
-                       </li>
-                </ul>
-                <!-- Sidebar Footer -->
-            </nav>
-            <!-- sidebar-wrapper -->
+            if($_REQUEST["eWith_Amount"] > $eanring_row["Total_Earning"] || $eanring_row["Total_Earning"] <= 0){
+                echo "<script>window.location='withdraw-page.php?Err=withdrawerr'</script>";
+            }
+            else{
 
-            <!-- Start Page Content -->
-            <main class="page-content bg-light">
-                <div class="top-header">
-                    <div class="header-bar d-flex justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <a href="#" class="logo-icon me-3">
-                                <img src="assets/images/logo-icon.png" height="30" class="small" alt="">
-                                <span class="big">
-                                    <img src="assets/images/logo-dark.png" height="24" class="logo-light-mode" alt="">
-                                    <img src="assets/images/logo-light.png" height="24" class="logo-dark-mode" alt="">
-                                </span>
-                            </a>
-                            <a id="close-sidebar" class="btn btn-icon btn-soft-light" href="javascript:void(0)">
-                                <i class="ti ti-menu-2"></i>
-                            </a>
-                            <div class="search-bar p-0 d-none d-md-block ms-2">
-                                <div id="search" class="menu-search mb-0">
-                                    <form role="search" method="get" id="searchform" class="searchform">
-                                        <div>
-                                            <input type="text" class="form-control border rounded" name="s" id="s" placeholder="Search Keywords...">
-                                            <input type="submit" id="searchsubmit" value="Search">
-                                        </div>
-                                    </form>
+                $iquery = "INSERT INTO `withdraw`(w_type, w_user, w_amounttype, w_bank, w_iban, w_account,w_package, w_amount, w_date, w_status) 
+                                VALUES ('Earning','".$_SESSION["User_ID"]."','".$_REQUEST["eWithdraw_type"]."','".$_REQUEST["eWithdraw_bank"]."','".$_REQUEST["eIBAN"]."','".$_REQUEST["eaccount"]."','".$_REQUEST["Withdraw_Package"]."','".$_REQUEST["eWith_Amount"]."','".Date("Y-m-d")."','Pending')";
+
+                mysqli_query($con,$iquery);
+                echo "<script>window.location='withdraw.php?Err=withdrawamout'</script>";
+            }
+        }
+    }
+}
+
+if(isset($_POST['btnEarningWithdraw2']))
+{
+
+    $iquery = "INSERT INTO `withdraw`(w_type, w_user, w_amounttype, w_bank, w_iban, w_account,w_package, w_amount, w_date, w_status) 
+                    VALUES ('Earning','".$_SESSION["User_ID"]."','".$_REQUEST["eWithdraw_type"]."','".$_REQUEST["eWithdraw_bank"]."','".$_REQUEST["eIBAN"]."','".$_REQUEST["eaccount"]."','".$_REQUEST["Withdraw_Package"]."','".$_REQUEST["eWith_Amount"]."','".Date("Y-m-d")."','Pending')";
+
+    mysqli_query($con,$iquery);
+    echo "<script>window.location='user-dashboard.php?Err=withdrawamout'</script>";
+
+
+}
+include "includes/userheader.php"
+?>
+                <div class="row justify-content-center mt-4">
+                    <?php
+
+                    $query = "SELECT * FROM packages";
+                    $sql = mysqli_query($con,$query);
+                    while($row = mysqli_fetch_array($sql)){
+
+                        ?>
+                        <div class="col-lg-3 col-md-4 col-12 mt-4 pt-2">
+                            <div class="card pricing pricing-primary business-rate shadow bg-light border-0 rounded">
+                                <div class="card-body">
+                                    <h6 class="title name fw-bold text-uppercase mb-4"><?=$row["p_name"]?></h6>
+                                    <div class="d-flex mb-4">
+                                        <span class="h4 mb-0 mt-2">Rs.</span>
+                                        <span class="price h1 mb-0"><?=$row["p_invest"]?></span>
+                                    </div>
+
+                                    <ul class="list-unstyled mb-0 ps-0">
+                                        <li class="h6 text-muted mb-0"><span class="icon h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Duration <?=$row["p_duration"]?></li>
+                                        <li class="h6 text-muted mb-0"><span class="icon h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Daily Auto Profit Rs.<?=$row["p_earning"]?></li>
+                                        <li class="h6 text-muted mb-0"><span class="icon h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Min/Max Unlimited Rs.<?=$row["p_earning"]?></li>
+                                        <li class="h6 text-muted mb-0"><span class="icon h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Refer Commission Rs.<?=$row["p_reffered_commision"]?></li>
+                                        <li class="h6 text-muted mb-0"><span class="icon h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Total Profit Rs.<?=$row["p_total_profit"]?></li>
+                                    </ul>
+                                    <a href="javascript:void(0)" class="btn mt-4">Buy Now</a>
                                 </div>
                             </div>
-                        </div>
-        
-                        <ul class="list-unstyled mb-0">
-                            <li class="list-inline-item mb-0">
-                                <a href="javascript:void(0)" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
-                                  </a>
-                            </li>
+                        </div><!--end col-->
+                        <?php
 
-                            <li class="list-inline-item mb-0 ms-1">
-                                <div class="dropdown dropdown-primary">
-                                    <button type="button" class="btn btn-icon btn-soft-light dropdown-toggle p-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ti ti-bell"></i></button>
-                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                                        <span class="visually-hidden">New alerts</span>
-                                    </span>
-                                    
-                                    <div class="dropdown-menu dd-menu bg-white shadow rounded border-0 mt-3 p-0" data-simplebar style="height: 320px; width: 290px;">
-                                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
-                                            <h6 class="mb-0 text-dark">Notifications</h6>
-                                            <span class="badge bg-soft-danger rounded-pill">3</span>
-                                        </div>
-                                        <div class="p-3">
-                                            <a href="#!" class="dropdown-item features feature-primary key-feature p-0">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon text-center rounded-circle me-2">
-                                                        <i class="ti ti-shopping-cart"></i>
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <h6 class="mb-0 text-dark title">Order Complete</h6>
-                                                        <small class="text-muted">15 min ago</small>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                            
-                                            <a href="#!" class="dropdown-item features feature-primary key-feature p-0 mt-3">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="assets/images/client/04.jpg" class="avatar avatar-md-sm rounded-circle border shadow me-2" alt="">
-                                                    <div class="flex-1">
-                                                        <h6 class="mb-0 text-dark title"><span class="fw-bold">Message</span> from Luis</h6>
-                                                        <small class="text-muted">1 hour ago</small>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                            
-                                            <a href="#!" class="dropdown-item features feature-primary key-feature p-0 mt-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon text-center rounded-circle me-2">
-                                                        <i class="ti ti-currency-dollar"></i>
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <h6 class="mb-0 text-dark title"><span class="fw-bold">One Refund Request</span></h6>
-                                                        <small class="text-muted">2 hour ago</small>
-                                                    </div>
-                                                </div>
-                                            </a>
-
-                                            <a href="#!" class="dropdown-item features feature-primary key-feature p-0 mt-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon text-center rounded-circle me-2">
-                                                        <i class="ti ti-truck-delivery"></i>
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <h6 class="mb-0 text-dark title">Deliverd your Order</h6>
-                                                        <small class="text-muted">Yesterday</small>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                            
-                                            <a href="#!" class="dropdown-item features feature-primary key-feature p-0 mt-3">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="assets/images/client/15.jpg" class="avatar avatar-md-sm rounded-circle border shadow me-2" alt="">
-                                                    <div class="flex-1">
-                                                        <h6 class="mb-0 text-dark title"><span class="fw-bold">Cally</span> started following you</h6>
-                                                        <small class="text-muted">2 days ago</small>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-
-                            <li class="list-inline-item mb-0 ms-1">
-                                <li class="list-inline-item mb-0 ms-1">
-                                    <div class="dropdown dropdown-primary">
-                                        <button type="button" class="btn btn-soft-light dropdown-toggle p-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="assets/images/client/05.jpg" class="avatar avatar-ex-small rounded" alt=""></button>
-                                        <div class="dropdown-menu dd-menu dropdown-menu-end bg-white shadow border-0 mt-3 py-3" style="min-width: 200px;">
-                                            <a class="dropdown-item d-flex align-items-center text-dark pb-3" href="profile.html">
-                                                <img src="assets/images/client/05.jpg" class="avatar avatar-md-sm rounded-circle border shadow" alt="">
-                                                <div class="flex-1 ms-2">
-                                                    <span class="d-block">Cristina Julia</span>
-                                
-                                                </div>
-                                            </a>
-                                            <a class="dropdown-item text-dark" href="#"><span class="mb-0 d-inline-block me-1"><i class="ti ti-home"></i></span> Dashboard</a>
-                                            <a class="dropdown-item text-dark" href="#"><span class="mb-0 d-inline-block me-1"><i class="ti ti-settings"></i></span> Profile</a>
-                                             <div class="dropdown-divider border-top"></div>
-                                              <a class="dropdown-item text-dark" href="/landing/login.php"><span class="mb-0 d-inline-block me-1"><i class="ti ti-logout"></i></span> Logout</a>
-                                        </div>
-                                    </div>
-                                </li>
-                            </li>
-                        </ul>
-                    </div>
+                    }
+                    ?>
                 </div>
-
-                <div class="container-fluid">
-                    <div class="layout-specing">
-                        <div class="d-md-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Pricing</h5>
-
-                            <nav aria-label="breadcrumb" class="d-inline-block mt-2 mt-sm-0">
-                                <ul class="breadcrumb bg-transparent rounded mb-0 p-0">
-                                    <li class="breadcrumb-item text-capitalize"><a href="index.html">Landrick</a></li>
-                                    <li class="breadcrumb-item text-capitalize active" aria-current="page">Pricing</li>
-                                </ul>
-                            </nav>
-                        </div>
-                    
-                        <div class="row justify-content-center">
-                            <div class="col-12 text-center">
-                                <div class="switcher-pricing d-flex justify-content-center align-items-center">
-                                    <label class="toggler text-muted toggler--is-active" id="filt-monthly">Monthly</label>
-                                    <div class="form-check form-switch mx-3">
-                                        <input class="form-check-input" type="checkbox" id="switcher">
-                                    </div>
-                                    <label class="toggler text-muted" id="filt-yearly">Yearly</label>
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end row-->
-        
-                        <div class="row">
-                            <div class="col-12">
-                                <div id="monthly" class="wrapper-full">
-                                    <div class="row row-cols-xl-5 row-cols-lg-4 row-cols-md-2 row-cols-1">
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Free</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">0</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Buy Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow bg-white border-0 rounded">
-                                                <div class="ribbon ribbon-right ribbon-warning overflow-hidden"><span class="text-center d-block shadow small h6">Best</span></div>
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Starter</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">39</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Free Appointments</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Get Started</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Business</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">59</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>1 Domain Free</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Enhanced Security</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Try It Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Professional</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">79</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Enhanced Security</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>1 Domain Free</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Free Installment</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Started Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Ultimate</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">129</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Enhanced Security</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>1 Domain Free</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Free Installment</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>including All Pack</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Started Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                    </div><!--end row-->
-                                </div>
-        
-                                <div id="yearly" class="wrapper-full hide">
-                                    <div class="row row-cols-xl-5 row-cols-lg-4 row-cols-md-2 row-cols-1">
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Free</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">10</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Buy Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow bg-white border-0 rounded">
-                                                <div class="ribbon ribbon-right ribbon-warning overflow-hidden"><span class="text-center d-block shadow small h6">Best</span></div>
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Starter</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">139</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Free Appointments</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Get Started</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Business</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">159</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>1 Domain Free</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Enhanced Security</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Try It Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Professional</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">179</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Enhanced Security</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>1 Domain Free</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Free Installment</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Started Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                        
-                                        <div class="col mt-4">
-                                            <div class="card pricing-rates business-rate shadow border-0 rounded">
-                                                <div class="card-body">
-                                                    <h6 class="title fw-bold text-uppercase text-primary mb-4">Ultimate</h6>
-                                                    <div class="d-flex mb-4">
-                                                        <span class="h4 mb-0 mt-2">$</span>
-                                                        <span class="price h1 mb-0">229</span>
-                                                        <span class="h4 align-self-end mb-1">/mo</span>
-                                                    </div>
-                                                    
-                                                    <ul class="list-unstyled mb-0 ps-0">
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Full Access</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Enhanced Security</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Source Files</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>1 Domain Free</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>Free Installment</li>
-                                                        <li class="h6 text-muted mb-0"><span class="text-primary h5 me-2"><i class="uil uil-check-circle align-middle"></i></span>including All Pack</li>
-                                                    </ul>
-                                                    <a href="javascript:void(0)" class="btn btn-primary mt-4">Started Now</a>
-                                                </div>
-                                            </div>
-                                        </div><!--end col-->
-                                    </div><!--end row-->
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end row-->
-                    </div>
-                </div><!--end container-->
                 <div class="col-12 mt-4" id="select-box">
                     <div class="component-wrapper bg-white rounded shadow">
                         <div class="p-4 border-bottom">
-                            <h4 class="title mb-0 text-center"> 
+                            <h4 class="title mb-0 text-center">
                                 Send your Commission Withdraw Request </h4>
                         </div>
 
-                        <div class="p-4">
-                            <div class="mb-0">
-                                <select class="form-select form-control" aria-label="Default select example">
-                                    <option selected>Select your Package</option>
-                                    <option value="1">R15</option>
-                                    <option value="2">R30</option>
-                                    <option value="3">R40</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="mb-0">
-                                <select class="form-select form-control" aria-label="Default select example">
-                                    <option selected>Select Withdraw type</option>
-                                    <option value="1">Bank</option>
-                                    <option value="2">Jazzcash</option>
-                                    <option value="3">EasyPaisa</option>
-                                </select>
-                            </div>
-                            
-                        </div>
-                        <div class="p-4">
-                            <div class="mb-0">
-                                
-                                <input type="number" class="form-control" id="email" placeholder="0 ">
-                              
-                            </div><br>
-                            <button type="button" class="btn btn-danger">Send Request</button>
-                        </div>
+<!--                        <div class="p-4">-->
+<!--                            <div class="mb-0">-->
+<!--                                <select class="form-select form-control" aria-label="Default select example">-->
+<!--                                    <option selected>Select your Package</option>-->
+<!--                                    --><?php
+//                                    if($_SESSION["User_TYPE"] == "Normal") {
+//                                        $queryPK1 = "SELECT DISTINCT(epackage) as userpackage FROM user_earnings WHERE euserid = '".$_SESSION["User_ID"]."' ";
+//                                        $sqlPK1 = mysqli_query($con,$queryPK1);
+//                                        while($rowPK1 = mysqli_fetch_array($sqlPK1)){
+//
+//                                            $queryP = "SELECT * FROM packages WHERE p_id = '".$rowPK1["userpackage"]."' ";
+//                                            $resP = mysqli_query($con,$queryP);
+//                                            $rowP = mysqli_fetch_array($resP);
+//                                            ?>
+<!--                                            <option value="--><?//=$rowP["p_id"]?><!--">--><?//=$rowP["p_name"]?><!--</option>-->
+<!--                                            --><?php
+//                                        }
+//                                    } else {
+//                                        ?>
+<!--                                        <option value="0">Special User Package</option>-->
+<!--                                        --><?php
+//                                    }
+//                                    ?>
+<!--                                </select>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="p-4">-->
+<!--                            <div class="mb-0">-->
+<!--                                <select class="form--control" onchange="Withdraw_type(this.value)" name="eWithdraw_type" required>-->
+<!--                                    <option value="">Select Withdraw Type</option>-->
+<!--                                    <option value="Bank">Bank</option>-->
+<!--                                    <option value="Jazzcash">Jazzcash</option>-->
+<!--                                    <option value="Easypaisa">Easypaisa</option>-->
+<!--                                </select>-->
+<!--                            </div>-->
+<!---->
+<!--                        </div>-->
+<!--                        <div class="p-4">-->
+<!--                            <div class="mb-0">-->
+<!---->
+<!--                                <input type="number" class="form-control" id="email" placeholder="0 ">-->
+<!---->
+<!--                            </div><br>-->
+<!--                            <button type="button" class="btn btn-danger">Send Request</button>-->
+<!--                        </div>-->
+                         <form name="editprofile" method="post" class="account-form">
+                                <div class="form-group">
+                                    <label>Select Your Package</label>
+                                    <select class="form-control" onchange="withdrawPackage(<?=$_SESSION["User_ID"]?>,this.value)" name="Withdraw_Package" required>
+                                        <option value="">Select Your Package</option>
+                              <?php
+                                if($_SESSION["User_TYPE"] == "Normal") {
+                                    $queryPK1 = "SELECT DISTINCT(epackage) as userpackage FROM user_earnings WHERE euserid = '".$_SESSION["User_ID"]."' ";
+                                    $sqlPK1 = mysqli_query($con,$queryPK1);
+                                    while($rowPK1 = mysqli_fetch_array($sqlPK1)){
+
+                                      $queryP = "SELECT * FROM packages WHERE p_id = '".$rowPK1["userpackage"]."' ";
+                                      $resP = mysqli_query($con,$queryP);
+                                      $rowP = mysqli_fetch_array($resP);
+                              ?>
+                                        <option value="<?=$rowP["p_id"]?>"><?=$rowP["p_name"]?></option>
+                              <?php
+                                    }
+                                } else {
+                              ?>
+                                        <option value="0">Special User Package</option>
+                              <?php
+                                }
+                              ?>
+                                    </select>
+                                </div>
+                                <br><br>
+                                <div class="form-group">
+                                    <label>Select Withdraw Type</label>
+                                    <select class="form-control" onchange="Withdraw_type(this.value)" name="eWithdraw_type" required>
+                                        <option value="">Select Withdraw Type</option>
+                                        <option value="Bank">Bank</option>
+                                        <option value="Jazzcash">Jazzcash</option>
+                                        <option value="Easypaisa">Easypaisa</option>
+                                    </select>
+                                </div>
+                                <br><br>
+                                <div class="form--group" id="bank_name" style="display: none;">
+                                    <label>Select Bank</label>
+                                    <select class="form-control" name="eWithdraw_bank" id="eWithdraw_bank" required>
+                                        <option value="">Select Bank</option>
+              <?php
+                  $query_bank = "SELECT * FROM banks";
+                $sql_bank = mysqli_query($con,$query_bank);
+                while($row_bank = mysqli_fetch_array($sql_bank)){
+              ?>
+                  <option value="<?=$row_bank["bank_id"]?>" ><?=$row_bank["bank_name"]?></option>
+              <?php
+                  }
+              ?>
+                                    </select>
+                                </div>
+                                <div class="form--group" id="bank_IBAN" style="display: none;">
+                                    <label>IBAN No.</label>
+                                    <input type="text" class="form-control" id="IBAN" name="eIBAN" placeholder="IBAN No." autocomplete="off" >
+                                </div>
+                                <div class="form--group" id="Withdraw_Account" style="display: none;">
+                                    <label>Account No.</label>
+                                    <input type="number" class="form-control" id="account" maxlength="11" name="eaccount" placeholder="Jazzcash / Easypaisa Account" autocomplete="off">
+                                </div>
+                                <div class="form--group">
+                                    <label>Amount for Withdraw</label>
+                            <?php if($_SESSION["User_TYPE"] == "Normal") { ?>
+                                    <span style="font-size: 12px;">(Minimum Withdraw Limit <big><b id="Withdraw_Limit"></b></big>) and (Your Available Earning <big><b id="Pack_Earn"></b></big>)</span>
+                                    <input type="number" min="0" max="0" class="form-control" placeholder="Amount for Withdraw" name="eWith_Amount" id="eWith_Amount" value="0" required>
+                            <?php } else { ?>
+                                    <input type="number" name="eWith_Amount" min="0" max="" value="<?php echo $Remaining_Balance; ?>" readonly id="eWith_Amount" required class="form-control" placeholder="Amount for Withdraw"/>
+                            <?php } ?>
+                                </div>
+                                <div class="form--group">
+    <?php
+       if($_SESSION["User_TYPE"] == "Normal") {
+           $ewithdraw_condition = $Total_Earning * 0.25;
+           if($Total_Earning > 0) {
+    ?>
+            <button type="submit" value="submit" class="btn btn-primary" name="btnEarningWithdraw" id="btnEarningWithdraw">Send Request</button></div>
+    <?php
+           } else {
+    ?>
+            <button type="button" value="submit" class="btn btn-warning" name="nowithdraw" id="nowithdraw" disabled>You Cannot Withdraw Amount</button></div>
+    <?php   if($ewithdraw_condition != 0) { ?>
+                <p align="center" class="text-danger"><b>For Withdraw Earning Amount, Your Amount should have to be greater than or equal to <big>Rs. <?=$ewithdraw_condition?></big>.</b></p>
+    <?php   } else { ?>
+            <p align="center" class="text-danger"><b>You can't Withdraw Amount, You do not have any Earnings.</b></p>
+    <?php
+            }
+          }
+       } else {
+           if($Remaining_Balance == "" || $Remaining_Balance == 0){
+    ?>
+            <button type="button" value="submit" class="btn btn-warning" name="nowithdraw" id="nowithdraw" disabled>You Cannot Withdraw Amount</button></div>
+    <?php
+           } else {
+    ?>
+            <button type="submit"  value="submit" class="btn btn-primary" name="btnEarningWithdraw2" id="btnEarningWithdraw2">Send Request</button></div>
+    <?php
+           }
+       }
+    ?>
+                                </div>
+                            </form>
                     </div>
+
+
+                   
                     <!-- Table Start -->
                     <div class="col-12 mt-4" id="tables">
                         <div class="component-wrapper bg-white rounded shadow">
@@ -507,33 +260,49 @@
 
                             <div class="p-4">
                                 <div class="table-responsive bg-white shadow rounded">
-                                    <table class="table mb-0 table-center">
-                                        <thead>
-                                            <tr>
-                                            <th scope="col" class="border-bottom">Sr No</th>
-                                            <th scope="col" class="border-bottom">Package Name</th>
-                                            <th scope="col" class="border-bottom">Earning Type</th>
-                                            <th scope="col" class="border-bottom">Account Type</th>
-                                            <th scope="col" class="border-bottom">Account No</th>
-                                            <th scope="col" class="border-bottom">Account</th>
-                                            <th scope="col" class="border-bottom">Date</th>  
-                                            <th scope="col" class="border-bottom">Status</th>   
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <th scope="row">1</th>
-                                                <td>R30</td>
-                                                <td>Earning</td>
-                                                <td>Easypaisa</td>
-                                                <td>665sdf78658 (Easypaisa)</td>
-                                                <td>PKR 200</td>
-                                                <td>20-09-2022</td>
-                                                <td>Send</td>
-                                            </tr>
-                                            
-                                        </tbody>
-                                    </table>
+                                    <table class="table table-bordered">
+                                            <thead>
+                                              <th>Sr. No.</th>
+                                              <th>Package Name</th>
+                                              <th>Earning Type</th>
+                                              <th>Account Type</th>
+                                              <th>Account No</th>
+                                              <th>Amount</th>
+                                              <th>Date</th>
+                                              <th>Status</th>
+                                            </thead>
+                                            <tbody>
+                                              <?php
+                                                $Sr = 1;
+                                                $query = "SELECT * FROM withdraw W LEFT JOIN packages P ON P.p_id = W.w_package WHERE W.w_user = '".$_SESSION["User_ID"]."' AND (W.w_status = 'Pending' OR W.w_status = 'Send')";
+                                                $sql = mysqli_query($con,$query); //echo $query;
+                                                $withdraw_num = mysqli_num_rows($sql);
+                                                while($withdraw_row = mysqli_fetch_array($sql)){
+
+                                                    $bankname = "";
+                                                    if($withdraw_row["w_amounttype"] == "Bank") {
+                                                        $bquery = "SELECT * FROM banks WHERE bank_id = '".$withdraw_row["w_bank"]."' ";
+                                                        $bsql = mysqli_query($con,$bquery)or die(mysqli_error($con));
+                                                        $brow = mysqli_fetch_array($bsql);
+                                                        $bankname = $brow["bank_name"];
+                                                    }
+                                              ?>
+                                              <tr>
+                                                <td><?=$Sr;?></td>
+                                                <td><?php if($withdraw_row["p_name"] == ""){ echo "------"; } else { echo $withdraw_row["p_name"]; } ?></td>
+                                                <td><?=$withdraw_row["w_type"]?></td>
+                                                <td><?=$withdraw_row["w_amounttype"]?></td>
+                                                <td><?php if($withdraw_row["w_amounttype"] == "Bank") { echo $withdraw_row["w_iban"]." <br>(<b>".$withdraw_row["w_amounttype"]."</b>: ".$bankname.")"; } else { echo $withdraw_row["w_account"]." (".$withdraw_row["w_amounttype"].")"; } ?></td>
+                                                <td>PKR <?=number_format($withdraw_row["w_amount"])?></td>
+                                                <td><?=date("d-m-Y",strtotime($withdraw_row["w_date"]));?></td>
+                                                <td><?=$withdraw_row["w_status"]?></td>
+                                              </tr>
+                                              <?php
+                                                $Sr++;
+                                                  }
+                                              ?>
+                                            </tbody>
+                                          </table>
                                 </div>
                             </div>
                         </div>
@@ -549,10 +318,10 @@
                                     <p class="mb-0 text-muted">© <script>document.write(new Date().getFullYear())</script> Site1</p>
                                 </div>
                             </div><!--end col-->
-                            
+
                         </div><!--end row-->
 
-                        
+
                     </div><!--end container-->
                 </footer><!--end footer-->
                 <!-- End -->
@@ -615,6 +384,86 @@
         <!-- Main Js -->
         <script src="assets/js/plugins.init.js"></script>
         <script src="assets/js/app.js"></script>
+<script type="text/javascript">
+
+    function Withdraw_type(val){
+        if (val == "Bank") {
+            $("#bank_name").show();
+            $("#bank_IBAN").show();
+            $("#Withdraw_Account").hide();
+
+            $("#eWithdraw_bank").attr("required", true);
+            $("#IBAN").attr("required", true);
+            $("#account").attr("required", false);
+        }
+        else{
+            $("#bank_name").hide();
+            $("#bank_IBAN").hide();
+            $("#Withdraw_Account").show();
+
+            document.getElementById("account").placeholder = val+" Account No.";
+
+            $("#eWithdraw_bank").attr("required", false);
+            $("#IBAN").attr("required", false);
+            $("#account").attr("required", true);
+        }
+    }
+
+    function withdrawPackage(user,id){
+        // alert(user+" = "+id);
+        var min_amount = 0;
+        $.ajax({
+            type: 'post',
+            data: { "id":id,"user":user },
+            url: 'ajax_work.php?Package_Withdraw_Limit&ID='+id,
+            dataType: 'html',
+            cache: false,
+            success: function(data){
+                min_amount = parseInt(data);
+                var amount = "RS. "+data;
+                $("#eWith_Amount").attr({"min" : data});
+                $("#Withdraw_Limit").html(amount);
+            }
+        });
+
+        var max_amount = 0;
+        $.ajax({
+            type: 'post',
+            data: { "id":id,"user":user },
+            url: 'ajax_work.php?Package_Withdraw&ID='+id+'&User='+user,
+            dataType: 'html',
+            cache: false,
+            success: function(data){
+                // alert(data);
+                max_amount = parseInt(data);
+                var amount = "RS. "+data;
+                if(min_amount <= max_amount){
+                    $("#eWith_Amount").attr({"max" : data});
+                }
+                $("#Pack_Earn").html(amount);
+            }
+        });
+        var max_amount = 0;
+        $.ajax({
+            type: 'post',
+            data: { "id":id,"user":user },
+            url: 'ajax_work.php?CheckWithdrawRequest&ID='+id+'&User='+user,
+            dataType: 'html',
+            cache: false,
+            success: function(data){
+                // alert(data);
+                if(data == "Yes"){
+                    $("#btnEarningWithdraw").attr("disabled", true);
+                    $("#btnEarningWithdraw").text("You cannot withdraw, your request is already in pending.");
+                } else {
+                    $("#btnEarningWithdraw").attr("disabled", false);
+                    $("#btnEarningWithdraw").text("Send Request");
+                }
+            }
+        });
+
+    }
+</script>
         
     </body>
 

@@ -25,7 +25,11 @@
 
             </li>
             <li class="sidebar">
-                <a href="index.html"><i class="ti ti-logout me-2"></i>Logout</a>
+                <a href="commision.php"><i class="ti ti-apps me-2"></i>Commission From Referrals</a>
+
+            </li>
+            <li class="sidebar">
+                <a href="logout.php"><i class="ti ti-logout me-2"></i>Logout</a>
 
             </li>
             <!-- sidebar-menu  -->

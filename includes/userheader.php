@@ -50,6 +50,7 @@ $Remaining_Balance = $Total_Earning - $Withdarw_Earning;
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <!-- simplebar -->
     <link href="assets/css/simplebar.css" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
 
     <!-- Icons -->
     <link href="assets/css/materialdesignicons.min.css" rel="stylesheet" type="text/css" />
@@ -181,14 +182,14 @@ $Remaining_Balance = $Total_Earning - $Withdarw_Earning;
                                 <a class="dropdown-item d-flex align-items-center text-dark pb-3" href="profile.html">
                                     <img src="assets/images/client/05.jpg" class="avatar avatar-md-sm rounded-circle border shadow" alt="">
                                     <div class="flex-1 ms-2">
-                                        <span class="d-block">Cristina Julia</span>
+                                        <span class="d-block"><?php echo $_SESSION["User_FULLNAME"]; ?></span>
 
                                     </div>
                                 </a>
-                                <a class="dropdown-item text-dark" href="#"><span class="mb-0 d-inline-block me-1"><i class="ti ti-home"></i></span> Dashboard</a>
-                                <a class="dropdown-item text-dark" href="#"><span class="mb-0 d-inline-block me-1"><i class="ti ti-settings"></i></span> Profile</a>
+                                <a class="dropdown-item text-dark" href="user-dashboard.php"><span class="mb-0 d-inline-block me-1"><i class="ti ti-home"></i></span> Dashboard</a>
+                                <a class="dropdown-item text-dark" href="profile-edit.php"><span class="mb-0 d-inline-block me-1"><i class="ti ti-settings"></i></span>Edit Profile</a>
                                 <div class="dropdown-divider border-top"></div>
-                                <a class="dropdown-item text-dark" href="/landing/login.php"><span class="mb-0 d-inline-block me-1"><i class="ti ti-logout"></i></span> Logout</a>
+                                <a class="dropdown-item text-dark" href="logout.php"><span class="mb-0 d-inline-block me-1"><i class="ti ti-logout"></i></span> Logout</a>
                             </div>
                         </div>
                     </li>
